@@ -30,4 +30,4 @@ function coverUrlFromTheme(theme) {
   return `theme:${theme}`;
 }
 
-module.exports = { boardToListItem, themeFromCoverUrl, coverUrlFromTheme };
+module.exports = { boardToListItem, coverUrlFromTheme };
