@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createBoard, fetchBoards, fetchWorkspaces, toggleStar } from "../api/boardsApi";
+import {
+  createBoard,
+  fetchBoards,
+  fetchWorkspaces,
+  recordBoardView,
+  toggleStar,
+} from "../api/boardsApi";
 import { useAuth } from "../context/AuthContext";
 import { BoardCard } from "../components/BoardCard";
 import { CreateBoardModal } from "../components/CreateBoardModal";
@@ -64,10 +70,11 @@ export function DashboardPage() {
 
   const recentBoards = useMemo(() => {
     return [...boards]
-      .sort(
-        (a, b) =>
-          new Date(b.updated_at || 0) - new Date(a.updated_at || 0)
-      )
+      .sort((a, b) => {
+        const tb = new Date(b.last_viewed_at || b.updated_at || 0);
+        const ta = new Date(a.last_viewed_at || a.updated_at || 0);
+        return tb - ta;
+      })
       .slice(0, 3);
   }, [boards]);
 
@@ -112,7 +119,13 @@ export function DashboardPage() {
     setModalOpen(true);
   }
 
-  function handleOpenBoard(board) {
+  async function handleOpenBoard(board) {
+    try {
+      await recordBoardView(board._id);
+      await load();
+    } catch {
+      /* ghi view không bắt buộc để mở bảng */
+    }
     window.alert(`Mở bảng: "${board.title || board.name}"`);
   }
 

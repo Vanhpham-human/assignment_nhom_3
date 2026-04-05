@@ -19,6 +19,12 @@ const {
   listWorkspacesForUser,
 } = require("./services/userContext");
 const { createWorkspaceForUser } = require("./auth/bootstrapWorkspace");
+const {
+  getStarredBoardIdSet,
+  toggleUserBoardStar,
+  recordBoardView,
+  getRecentViewMap,
+} = require("./services/boardUserPrefs");
 
 const PORT = Number(process.env.API_PORT || process.env.PORT) || 3000;
 
@@ -160,12 +166,21 @@ async function start() {
       const boards = await Board.find({
         workspace_id: { $in: wsIds },
         is_archived: false,
-      }).sort({ is_starred: -1, updated_at: -1, created_at: 1 });
+      }).sort({ updated_at: -1, created_at: 1 });
+      const starSet = await getStarredBoardIdSet(req.userId);
+      const recentMap = await getRecentViewMap(req.userId);
       res.json(
-        boards.map((b) => ({
-          ...boardToListItem(b, wsName[b.workspace_id] || ""),
-          workspace_id: b.workspace_id,
-        }))
+        boards.map((b) => {
+          const starred = starSet.has(b._id) || b.is_starred;
+          const last_viewed_at = recentMap.get(b._id);
+          return {
+            ...boardToListItem(b, wsName[b.workspace_id] || "", {
+              starred,
+              last_viewed_at,
+            }),
+            workspace_id: b.workspace_id,
+          };
+        })
       );
     } catch (e) {
       res.status(500).json({ error: String(e.message) });
@@ -215,10 +230,28 @@ async function start() {
       if (!board || !wsIds.includes(board.workspace_id)) {
         return res.status(404).json({ error: "Not found" });
       }
-      board.is_starred = !board.is_starred;
-      await board.save();
+      const starred = await toggleUserBoardStar(req.userId, board._id);
       const workspace = await Workspace.findById(board.workspace_id);
-      res.json(boardToListItem(board, workspace?.name || ""));
+      res.json(
+        boardToListItem(board, workspace?.name || "", {
+          starred,
+        })
+      );
+    } catch (e) {
+      res.status(500).json({ error: String(e.message) });
+    }
+  });
+
+  /** Ghi nhận mở bảng — dùng cho “Đã xem gần đây” (giống Trello). */
+  app.post("/api/boards/:id/view", authMiddleware, async (req, res) => {
+    try {
+      const wsIds = await getWorkspaceIdsForUser(req.userId);
+      const board = await Board.findById(req.params.id);
+      if (!board || !wsIds.includes(board.workspace_id) || board.is_archived) {
+        return res.status(404).json({ error: "Not found" });
+      }
+      await recordBoardView(req.userId, board._id);
+      res.json({ ok: true });
     } catch (e) {
       res.status(500).json({ error: String(e.message) });
     }

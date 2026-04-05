@@ -11,6 +11,8 @@ const CardLabel = require("./models/CardLabel");
 const Checklist = require("./models/Checklist");
 const ChecklistItem = require("./models/ChecklistItem");
 const Activity = require("./models/Activity");
+const UserBoardStar = require("./models/UserBoardStar");
+const UserBoardRecent = require("./models/UserBoardRecent");
 
 async function seedIfEmpty() {
   if ((await User.countDocuments()) > 0) return;
@@ -85,6 +87,21 @@ async function seedIfEmpty() {
       entity_type: "board",
       action: "board.created",
       new_data: JSON.stringify({ name: board.name }),
+    });
+  }
+
+  for (const b of boards) {
+    if (b.is_starred) {
+      await UserBoardStar.create({ user_id: user._id, board_id: b._id });
+    }
+  }
+  const forRecent = boards.slice(0, 3);
+  for (let i = 0; i < forRecent.length; i += 1) {
+    const t = new Date(Date.now() - (forRecent.length - i) * 60_000);
+    await UserBoardRecent.create({
+      user_id: user._id,
+      board_id: forRecent[i]._id,
+      last_viewed_at: t,
     });
   }
 

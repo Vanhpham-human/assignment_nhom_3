@@ -1,4 +1,4 @@
-// Source schema (DBML). MongoDB collections mirror these tables — see server/models/*.js
+// Source schema (DBML). MongoDB collections mirror these tables — see backend/models/*.js
 
 Table users {
   id uuid [primary key]
@@ -227,6 +227,29 @@ Table activities {
   created_at timestamp [not null]
 }
 
+// Bổ sung luồng giống Trello (per-user star + recently viewed)
+Table user_board_stars {
+  id uuid [primary key]
+  user_id uuid [not null]
+  board_id uuid [not null]
+  created_at timestamp [not null]
+
+  indexes {
+    (user_id, board_id) [unique]
+  }
+}
+
+Table user_board_recents {
+  id uuid [primary key]
+  user_id uuid [not null]
+  board_id uuid [not null]
+  last_viewed_at timestamp [not null]
+
+  indexes {
+    (user_id, board_id) [unique]
+  }
+}
+
 Ref: user_sessions.user_id > users.id
 Ref: otp_requests.user_id > users.id
 Ref: workspaces.owner_id > users.id
@@ -261,3 +284,7 @@ Ref: activities.board_id > boards.id
 Ref: activities.list_id > board_lists.id
 Ref: activities.card_id > cards.id
 Ref: activities.actor_id > users.id
+Ref: user_board_stars.user_id > users.id
+Ref: user_board_stars.board_id > boards.id
+Ref: user_board_recents.user_id > users.id
+Ref: user_board_recents.board_id > boards.id

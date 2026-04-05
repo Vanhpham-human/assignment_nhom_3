@@ -5,19 +5,24 @@ function themeFromCoverUrl(cover_url) {
   return "gradient-blue";
 }
 
-function boardToListItem(boardDoc, workspaceName) {
+function boardToListItem(boardDoc, workspaceName, opts = {}) {
   const b = boardDoc.toObject ? boardDoc.toObject() : boardDoc;
-  return {
+  const starred =
+    typeof opts.starred === "boolean" ? opts.starred : Boolean(b.is_starred);
+  const last_viewed_at = opts.last_viewed_at ?? undefined;
+  const out = {
     _id: b._id,
     title: b.name,
     name: b.name,
-    starred: b.is_starred,
+    starred,
     background: themeFromCoverUrl(b.cover_url),
     cover_url: b.cover_url,
     workspace: workspaceName,
     workspace_id: b.workspace_id,
     updated_at: b.updated_at,
   };
+  if (last_viewed_at) out.last_viewed_at = last_viewed_at;
+  return out;
 }
 
 function coverUrlFromTheme(theme) {

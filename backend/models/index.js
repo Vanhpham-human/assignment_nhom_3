@@ -15,3 +15,5 @@ require("./Checklist");
 require("./ChecklistItem");
 require("./Attachment");
 require("./Activity");
+require("./UserBoardStar");
+require("./UserBoardRecent");

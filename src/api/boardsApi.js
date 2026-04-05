@@ -20,6 +20,11 @@ export async function toggleStar(id) {
   return data;
 }
 
+export async function recordBoardView(id) {
+  const { data } = await api.post(`/boards/${id}/view`);
+  return data;
+}
+
 export async function deleteBoard(id) {
   await api.delete(`/boards/${id}`);
 }
