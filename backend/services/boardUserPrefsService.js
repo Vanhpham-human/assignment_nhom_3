@@ -1,12 +1,11 @@
-const UserBoardStar = require("../../backend/models/UserBoardStar");
-const UserBoardRecent = require("../../backend/models/UserBoardRecent");
+const UserBoardStar = require("../models/UserBoardStar");
+const UserBoardRecent = require("../models/UserBoardRecent");
 
 async function getStarredBoardIdSet(userId) {
   const rows = await UserBoardStar.find({ user_id: userId }).lean();
   return new Set(rows.map((r) => r.board_id));
 }
 
-/** Trả về true nếu sau thao tác bảng đang được user gắn sao. */
 async function toggleUserBoardStar(userId, boardId) {
   const existing = await UserBoardStar.findOne({ user_id: userId, board_id: boardId });
   if (existing) {
@@ -25,7 +24,6 @@ async function recordBoardView(userId, boardId) {
   );
 }
 
-/** Map board_id -> last_viewed_at cho user */
 async function getRecentViewMap(userId) {
   const rows = await UserBoardRecent.find({ user_id: userId }).lean();
   const m = new Map();
