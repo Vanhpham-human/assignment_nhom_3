@@ -1,0 +1,83 @@
+<%- include('partials/header') %>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-white fw-semibold">Top 10 Khách hàng</div>
+  <div class="table-responsive">
+    <table class="table table-striped mb-0">
+      <thead>
+        <tr>
+          <th>Tên</th>
+          <th>Email</th>
+          <th>Số đơn</th>
+          <th>Tổng thanh toán</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% topCustomers.forEach((customer) => { %>
+        <tr>
+          <td><%= customer.name %></td>
+          <td><%= customer.email %></td>
+          <td><%= customer.totalOrders %></td>
+          <td><%= formatCurrency(customer.totalPaid) %> VND</td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-white fw-semibold">Hiệu suất nhân viên</div>
+  <div class="table-responsive">
+    <table class="table table-striped mb-0">
+      <thead>
+        <tr>
+          <th>Mã NV</th>
+          <th>Tên NV</th>
+          <th>Số đơn</th>
+          <th>Doanh thu</th>
+          <th>Thưởng 1%</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% employeePerformance.forEach((employee) => { %>
+        <tr>
+          <td><%= employee.code %></td>
+          <td><%= employee.name %></td>
+          <td><%= employee.totalOrdersHandled %></td>
+          <td><%= formatCurrency(employee.totalRevenue) %> VND</td>
+          <td><%= formatCurrency(employee.bonus) %> VND</td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-header bg-white fw-semibold">Cảnh báo tồn kho (stock &lt; 10)</div>
+  <div class="table-responsive">
+    <table class="table table-striped mb-0">
+      <thead>
+        <tr>
+          <th>Sản phẩm</th>
+          <th>Danh mục</th>
+          <th>Giá bán</th>
+          <th>Tồn kho</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% lowStockProducts.forEach((product) => { %>
+        <tr>
+          <td><%= product.name %></td>
+          <td><%= product.category %></td>
+          <td><%= formatCurrency(product.price) %> VND</td>
+          <td><span class="badge text-bg-danger"><%= product.stock %></span></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
